@@ -314,6 +314,22 @@ p[String("key") + 1] = val;
 // если используется Pairs (на базе String)
 ```
 
+### PairsFile
+```cpp
+PairsFile data(&LittleFS, "/data.dat", 3000);
+
+void setup() {
+    LittleFS.begin();
+    data.begin();   // прочитать из файла
+
+    data["key"] = "value";  // изменили
+}
+
+void loop() {
+    data.tick();    // тикаем тут. Само обновится после таймаута
+}
+```
+
 <a id="versions"></a>
 ## Версии
 - v1.0
