@@ -32,7 +32,7 @@ class PairsFile : public Pairs {
         if (_fs->exists(_path)) {
             File file = _fs->open(_path, "r");
             if (!file) return 0;
-            if (!reserve(file.size() + res)) return 0;
+            if (!reserve(file.size() + 1 + res)) return 0;
             file.read((uint8_t*)str, file.size());
             str[file.size()] = '\0';
             refresh();
