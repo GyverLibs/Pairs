@@ -60,6 +60,7 @@
 ### Классы
 <details>
 <summary>PairsExt</summary>
+
 Основной объект пар на основе статического внешнего `char` массива указанной длины.
 
 ```cpp
@@ -75,6 +76,10 @@ uint16_t size;                          // указанный макс. разм
 void setBuffer(char* str, uint16_t len);// подключить буфер
 void clear();                           // очистить строку
 bool changed();                         // было изменение данных. Само сбросится в false
+bool contains(AnyText key);             // проверка на существование
+uint16_t length();                      // фактическая длина строки
+uint16_t amount();                      // количество пар
+void refresh();                         // пересчитать длину строки и количество пар (после ручных изменений)
 
 bool set(AnyText key, AnyValue value);  // установить по ключу
 bool setN(uint16_t idx, AnyValue value);// установить по индексу
@@ -89,16 +94,12 @@ bool toChar(char* buf, uint16_t len);   // вывести в char массив
 
 bool remove(AnyText key);               // удалить по ключу
 bool removeN(uint16_t idx);             // удалить по индексу
-
-bool contains(AnyText key);             // проверка на существование
-uint16_t length();                      // фактическая длина строки
-uint16_t amount();                      // количество пар
-void refresh();         // пересчитать длину строки и количество пар (после ручных изменений в базе)
 ```
 </details>
 <details>
 <summary>Pairs</summary>
-Объект пар на основе динамической строки. Методы такие же как у PairsExt, за исключением setBuffer/reserve.
+
+Объект пар на основе динамической строки. Методы такие же как у `PairsExt`, за исключением setBuffer/reserve.
 
 ```cpp
 // конструктор
@@ -112,17 +113,20 @@ bool reserve(uint16_t len);     // зарезервировать строку
 </details>
 <details>
 <summary>PairsStatic</summary>
+
 Основан на `PairsExt`, но вместо внешнего массива создаёт свой, внутри объекта.
 
 ```cpp
 // конструктор
 PairsStatic<макс. размер> ();
 
+// методы
 // наследует всё из PairsExt
 ```
 </details>
 <details>
 <summary>PairsFile</summary>
+
 Автоматическое хранение и обновление базы пар для esp8266/esp32. Привязывается к файлу, записывает в него данные при изменении + выходе таймаута. Основано на динамическом классе `Pairs`.
 
 ```cpp
