@@ -7,18 +7,23 @@ struct Pair_t {
     const char* val = nullptr;
     uint16_t val_len = 0;
 
+    operator String() {
+        return toString();
+    }
+
     // вывести в int
     int32_t toInt() {
-        return atol(val);
+        return val ? atol(val) : 0;
     }
 
     // вывести в float
     float toFloat() {
-        return atof(val);
+        return val ? atof(val) : 0.0;
     }
 
     // вывести в String
     String toString() {
+        if (!val) return String();
         String s;
         s.reserve(val_len);
         for (uint16_t i = 0; i < val_len; i++) s += val[i];
@@ -27,7 +32,7 @@ struct Pair_t {
 
     // вывести в char массив
     bool toChar(char* buf, uint16_t len) {
-        if (val_len >= len) return 0;
+        if (!val || val_len >= len) return 0;
         memcpy(buf, val, val_len);
         buf[val_len] = '\0';
         return 1;

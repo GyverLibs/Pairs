@@ -18,7 +18,6 @@ setBuffer	KEYWORD2
 reserve	KEYWORD2
 clear	KEYWORD2
 changed	KEYWORD2
-forceChange	KEYWORD2
 set	KEYWORD2
 setN	KEYWORD2
 get	KEYWORD2
@@ -29,6 +28,8 @@ toString	KEYWORD2
 toChar	KEYWORD2
 contains	KEYWORD2
 length	KEYWORD2
+amount	KEYWORD2
+refresh	KEYWORD2
 remove	KEYWORD2
 removeN	KEYWORD2
 
@@ -37,18 +38,6 @@ setTimeout	KEYWORD2
 begin	KEYWORD2
 update	KEYWORD2
 tick	KEYWORD2
-
-get_pair_by_key	KEYWORD2
-get_pair_by_idx	KEYWORD2
-set_by_key	KEYWORD2	KEYWORD2
-set_by_pair	KEYWORD2
-set_by_idx	KEYWORD2
-add_pair	KEYWORD2
-count_pairs	KEYWORD2
-count_pairs	KEYWORD2
-remove_by_idx	KEYWORD2
-remove_by_key	KEYWORD2
-remove_by_pair	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)

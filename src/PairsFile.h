@@ -32,14 +32,13 @@ class PairsFile : public Pairs {
         if (_fs->exists(_path)) {
             File file = _fs->open(_path, "r");
             if (!file) return 0;
-            if (res) Pairs::reserve(file.size() + res);
-            str = file.readString();
-            file.close();
+            if (!reserve(file.size() + res)) return 0;
+            file.read((uint8_t*)str, file.size());
+            str[file.size()] = '\0';
+            refresh();
         } else {
             File file = _fs->open(_path, "w");
             if (!file) return 0;
-            file.write('\0');
-            file.close();
         }
         return 1;
     }
@@ -48,9 +47,8 @@ class PairsFile : public Pairs {
     bool update() {
         File file = _fs->open(_path, "w");
         if (!file) return 0;
-        uint16_t len = file.print(str);
-        file.close();
-        return str.length() == len;
+        uint16_t len = file.write(str, length());
+        return length() == len;
     }
 
     // тикер, вызывать в loop. Сам обновит данные при изменении и выходе таймаута, вернёт true

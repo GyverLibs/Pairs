@@ -8,7 +8,7 @@
 # Pairs
 Хранение любых данных в текстовом виде в формате "ключ":значение
 - Быстрая и лёгкая реализация по сравнению с JSON
-- Выделение буфера: статическое или на базе String
+- Выделение буфера: статическое или динамическое (как у String)
 - Реализован доступ (чтение и запись) через []
 - Нативная конвертация из любых типов на запись, вывод в выбранный тип на чтение
 - Отдельный инструмент для esp8266/esp32 - автоматическая запись и чтение в файл
@@ -43,77 +43,24 @@
 
 
 <a id="docs"></a>
-
 ## Документация
-Данные хранятся в формате пар `"ключ":значение`, разделитель пар - `\n`. Таким образом читаемый формат разбивается на строки:
-```
-"key0":value 0
-"key1":123
-"key2":3.14
-```
+Библиотека содержит в себе несколько классов для работы в разных сценариях.
 
-### Escape
-Для правильной работы библиотеки все двойные кавычки внутри значений должны быть экранированы `\`, а внутри ключей - не использоваться!
-```
-"key0":some \"text\" 123    // корректно
-"key1":some "text" 123      // некорректно
-```
-
-### Примечание по типам данных
+### Типы данных
 В документации ниже тип данных `AnyText` может принимать:
-- `"строки"` - const char*, char*, строковые константы
+- `const char*`, `char*`, `"строковые константы"`
 - `F("строки")` - строки из PROGMEM
 - `String` - строки
 
 Тип `AnyValue` может принимать:
+- Строки как в `AnyText`
 - Все целые числа (8, 16, 32 бит)
-- `double`, `float`
-- `String` и `const char*` строки
+- `double` и `float`
 
-Библиотека содержит в себе несколько классов для работы в разных сценариях.
-
-### Основные
-<details>
-<summary>Pairs</summary>
-Объект пар на основе динамической String строки.
-
-```cpp
-// конструктор
-Pairs();
-Pairs(uint16_t size);                   // с указанием резерва строки
-Pairs(String& str);                     // из строки
-Pairs(String& str, uint16_t size);      // из строки + резерв
-
-// переменные
-String str;                             // строка для ручного доступа
-
-// методы
-bool reserve(uint16_t len);             // зарезервировать строку
-void clear();                           // очистить строку
-bool changed();                         // было изменение данных. Само сбросится в false
-void forceChange();                     // установить флаг на изменение
-
-bool set(AnyText key, AnyValue value);  // установить по ключу
-bool setN(uint16_t idx, AnyValue value);// установить по индексу
-
-Pair_t get(AnyText key);                // получить по ключу
-Pair_t getN(uint16_t idx);              // получить по индексу
-
-int32_t toInt();                        // вывести в int
-float toFloat();                        // вывести в float
-String toString();                      // вывести в String
-bool toChar(char* buf, uint16_t len);   // вывести в char массив
-
-bool remove(AnyText key);               // удалить по ключу
-bool removeN(uint16_t idx);             // удалить по индексу
-
-bool contains(AnyText key);             // проверка на существование
-uint16_t length();                      // получить количество пар
-```
-</details>
+### Классы
 <details>
 <summary>PairsExt</summary>
-Объект пар на основе статического внешнего `char` массива указанной длины. Методы такие же как у Pairs, за исключением setBuffer/reserve.
+Основной объект пар на основе статического внешнего `char` массива указанной длины.
 
 ```cpp
 // конструктор
@@ -128,7 +75,6 @@ uint16_t size;                          // указанный макс. разм
 void setBuffer(char* str, uint16_t len);// подключить буфер
 void clear();                           // очистить строку
 bool changed();                         // было изменение данных. Само сбросится в false
-void forceChange();                     // установить флаг на изменение
 
 bool set(AnyText key, AnyValue value);  // установить по ключу
 bool setN(uint16_t idx, AnyValue value);// установить по индексу
@@ -145,7 +91,23 @@ bool remove(AnyText key);               // удалить по ключу
 bool removeN(uint16_t idx);             // удалить по индексу
 
 bool contains(AnyText key);             // проверка на существование
-uint16_t length();                      // получить количество пар
+uint16_t length();                      // фактическая длина строки
+uint16_t amount();                      // количество пар
+void refresh();         // пересчитать длину строки и количество пар (после ручных изменений в базе)
+```
+</details>
+<details>
+<summary>Pairs</summary>
+Объект пар на основе динамической строки. Методы такие же как у PairsExt, за исключением setBuffer/reserve.
+
+```cpp
+// конструктор
+Pairs();
+Pairs(uint16_t size);           // с указанием резерва строки
+
+// методы
+bool reserve(uint16_t len);     // зарезервировать строку
+// наследует всё из PairsExt
 ```
 </details>
 <details>
@@ -161,13 +123,15 @@ PairsStatic<макс. размер> ();
 </details>
 <details>
 <summary>PairsFile</summary>
-Автоматическое хранение и обновление базы пар для esp8266/esp32. Привязывается к файлу, записывает в него данные при изменении + выходе таймаута. Основано на классе `Pairs`, т.е. на динамической строке `String`.
+Автоматическое хранение и обновление базы пар для esp8266/esp32. Привязывается к файлу, записывает в него данные при изменении + выходе таймаута. Основано на динамическом классе `Pairs`.
 
 ```cpp
-// наследует всё из Pairs
-
-// конструктор. Установить файловую систему, имя файла и таймаут
+// конструктор
+// Установить файловую систему, имя файла и таймаут
 PairsFile(fs::FS* nfs = nullptr, const char* path = nullptr, uint32_t tout = 10000);
+
+// методы
+// наследует всё из Pairs
 
 // установить файловую систему и имя файла
 void setFS(fs::FS* nfs, const char* path);
@@ -185,11 +149,9 @@ bool update();
 bool tick();
 ```
 </details>
-
-### Вспомогательные
 <details>
 <summary>Pair_t</summary>
-Объект пары, хранит указатели на ключ и значение и их длину.
+Объект пары, хранит указатели на ключ и значение и их длину, а также позволяет выводить данные в указанный тип.
 
 ```cpp
 const char* key;    // ключ
@@ -204,87 +166,10 @@ float toFloat();    // вывести значение в float
 String toString();  // вывести значение в String
 ```
 </details>
-<details>
-<summary>PairsChar</summary>
-Набор функций для работы с парами, текст хранится в char массиве.
-
-```cpp
-// получить пару по ключу
-Pair_t get_pair_by_key(const char* str, const char* key, bool pgm = false);
-
-// получить пару по индексу
-Pair_t get_pair_by_idx(const char* str, uint16_t idx);
-
-// установить значение по ключу(true - добавлено или изменено)
-bool set_by_key(char* str, uint16_t size, const char* key, const char* value, bool pgm = false);
-
-// установить значение по паре (true - добавлено или изменено)
-bool set_by_pair(char* str, uint16_t size, Pair_t pair, const char* value);
-
-// установить значение по индексу (true - добавлено или изменено)
-bool set_by_idx(char* str, uint16_t size, uint16_t idx, const char* value);
-
-// добавить пару
-Pair_t add_pair(char* str, uint16_t size, const char* key, const char* value, bool pgm = false);
-
-// посчитать количество пар
-uint16_t count_pairs(const char* str);
-
-// проверить существование пары по ключу
-bool count_pairs(const char* str, const char* key, bool pgm = false);
-
-// удалить пару по индексу
-bool remove_by_idx(char* str, uint16_t idx);
-
-// удалить пару по ключу
-bool remove_by_key(char* str, const char* key, bool pgm = false);
-
-// удалить пару по паре
-bool remove_by_pair(char* str, Pair_t pair);
-```
-</details>
-<details>
-<summary>PairsString</summary>
-Набор функций для работы с парами, текст хранится в String строке.
-
-```cpp
-// получить пару по ключу
-Pair_t get_pair_by_key(const String& str, const char* key, bool pgm = false);
-
-// получить пару по индексу
-Pair_t get_pair_by_idx(const String& str, uint16_t idx);
-
-// установить значение по ключу (true - добавлено или изменено)
-bool set_by_key(String& str, const char* key, const char* value, bool pgm = false);
-
-// установить значение по паре (true - добавлено или изменено)
-bool set_by_pair(String& str, Pair_t pair, const char* value);
-
-// установить значение по индексу (true - добавлено или изменено)
-bool set_by_idx(String& str, uint16_t idx, const char* value);
-
-// добавить пару
-Pair_t add_pair(String& str, const char* key, const char* value, bool pgm = false);
-
-// посчитать количество пар
-uint16_t count_pairs(const String& str);
-
-// проверить существование пары по ключу
-bool count_pairs(const String& str, const char* key, bool pgm = false);
-
-// удалить пару по индексу
-bool remove_by_idx(String& str, uint16_t idx);
-
-// удалить пару по ключу
-bool remove_by_key(String& str, const char* key, bool pgm = false);
-
-// удалить пару по паре
-bool remove_by_pair(String& str, Pair_t pair);
-```
-</details>
 
 <a id="usage"></a>
 ## Использование
+### Общая информация
 У разных классов по сути отличается только инициализация:
 
 ```cpp
@@ -309,6 +194,7 @@ PairsFile p(&LittleFS, "/data.dat");
 // запись. Типы данных в любых сочетаниях
 p["key0"] = "val0";
 p[F("key1")] = 1234;
+p[0] = F("abcd");
 p.set("key2", 3.14);
 p.setN(0, ("new val 0"));
 
@@ -326,8 +212,11 @@ String val = "value";
 p[String("key") + 1] = val;
 
 // но нужно помнить, что это может создавать фрагментацию памяти
-// если используется Pairs (на базе String)
+// если используется динамический Pairs
 ```
+
+### PairsExt
+При ручных изменениях в буфере (данные скопированы откуда-то извне) нужно вызвать `.refresh()` для пересчёта базы данных!
 
 ### PairsFile
 ```cpp
@@ -348,6 +237,11 @@ void loop() {
 <a id="versions"></a>
 ## Версии
 - v1.0
+- v1.1 
+  - Динамическая String реализация заменена на свою
+  - Добавлена возможность задавать значения из PROGMEM
+  - Библиотека облегчена и ускорена
+  - Больше безопасности
 
 <a id="feedback"></a>
 ## Баги и обратная связь
