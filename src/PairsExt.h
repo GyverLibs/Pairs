@@ -146,7 +146,7 @@ class PairsExt {
             pair.key = p + 1;
             p = strchr(p + 1, '\"');
             if (!p) return Pair_t();
-            if ((p - pair.key == key.len) && p[1] == ':' && key.cmp(pair.key)) {
+            if (((uint16_t)(p - pair.key) == key.len) && p[1] == ':' && key.cmp(pair.key)) {
                 p++;
                 pair.val = p + 1;
                 while (1) {
