@@ -22,11 +22,14 @@ struct Pair_t {
     }
 
     // вывести в String
-    String toString() {
+    String toString(bool unescape = true) {
         if (!val) return String();
         String s;
         s.reserve(val_len);
-        for (uint16_t i = 0; i < val_len; i++) s += val[i];
+        for (uint16_t i = 0; i < val_len; i++) {
+            if (unescape && val[i] == '\\') continue;
+            s += val[i];
+        }
         return s;
     }
 

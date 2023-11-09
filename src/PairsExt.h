@@ -234,8 +234,8 @@ class PairsExt {
     }
 
     // вывести в String
-    String toString() {
-        return _pair.toString();
+    String toString(bool unescape = true) {
+        return _pair.toString(unescape);
     }
 
     // вывести в char массив
