@@ -5,7 +5,6 @@
 #######################################
 # Datatypes (KEYWORD1)
 #######################################
-Pair_t	KEYWORD1
 Pairs	KEYWORD1
 PairsExt	KEYWORD1
 PairsStatic	KEYWORD1
@@ -19,19 +18,12 @@ reserve	KEYWORD2
 clear	KEYWORD2
 changed	KEYWORD2
 set	KEYWORD2
-setN	KEYWORD2
 get	KEYWORD2
-getN	KEYWORD2
-toInt	KEYWORD2
-toFloat	KEYWORD2
-toString	KEYWORD2
-toChar	KEYWORD2
 contains	KEYWORD2
 length	KEYWORD2
 amount	KEYWORD2
 refresh	KEYWORD2
 remove	KEYWORD2
-removeN	KEYWORD2
 
 setFS	KEYWORD2
 setTimeout	KEYWORD2

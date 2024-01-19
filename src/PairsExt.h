@@ -1,11 +1,11 @@
 #pragma once
 
 #include <Arduino.h>
+#include <StringUtils.h>
 
 #include "Pair_t.h"
-#include "utils/utils.h"
 
-class PairsExt {
+class PairsExt : public sutil::AnyText {
    public:
     PairsExt() {}
     PairsExt(char* str, uint16_t size) : str(str), size(size) {}
@@ -33,13 +33,15 @@ class PairsExt {
     }
 
     // проверка на существование пары
-    bool contains(const PairsUtils::AnyText& key) {
-        if (!str || !_len) return 0;
-        char buf[key.len + 3 + 1];  // "": == 3
-        key.pgm ? memcpy_P(buf + 1, key.str, key.len) : memcpy(buf + 1, key.str, key.len);
-        buf[key.len + 1] = buf[0] = '\"';
-        buf[key.len + 2] = ':';
-        buf[key.len + 3] = '\0';
+    bool contains(sutil::AnyText key) {
+        if (!str || !_len || !key.valid()) return 0;
+        char buf[key.length() + 3 + 1];  // "": == 3
+        char* p = buf;
+        *p++ = '\"';
+        p += key.toStr(p);
+        *p++ = '\"';
+        *p++ = ':';
+        *p++ = '\0';
         return strstr(str, buf);
     }
 
@@ -70,42 +72,43 @@ class PairsExt {
     // ======================== SET ========================
 
     // установить по ключу
-    bool set(const PairsUtils::AnyText& key, const PairsUtils::AnyValue& value) {
-        if (!str) return 0;
+    bool set(sutil::AnyText key, const sutil::AnyValue& value) {
+        if (!str || !key.valid() || !value.valid()) return 0;
         Pair_t pair = get(key);
         if (pair.val) return set(pair, value);
         else return add(key, value).val;
     }
 
     // установить по паре
-    virtual bool set(Pair_t pair, const PairsUtils::AnyValue& value) {
-        if (!str || !pair.val) return 0;
-        int16_t dif = value.len - pair.val_len;
+    virtual bool set(Pair_t pair, const sutil::AnyValue& value) {
+        if (!str || !pair.val || !value.valid()) return 0;
+
+        sutil::AnyText valuenc = value;
+        int16_t dif = valuenc.length() - pair.val_len;
         if (dif > 0 && _len + dif >= size) return 0;
 
-        if (value.len == pair.val_len && value.cmp(pair.val)) return 0;  // same
-        uint16_t count = str + _len - (pair.val + pair.val_len) + 1;     // +1 for \0
-        memmove((void*)(pair.val + value.len), pair.val + pair.val_len, count);
-        if (value.pgm) memcpy_P((void*)pair.val, value.str, value.len);
-        else memcpy((void*)pair.val, value.str, value.len);
-        _len += (value.len - pair.val_len);
+        if (valuenc.length() == pair.val_len && valuenc.compare(pair.val)) return 0;  // same
+        uint16_t count = str + _len - (pair.val + pair.val_len) + 1;                  // +1 for \0
+        memmove((void*)(pair.val + valuenc.length()), pair.val + pair.val_len, count);
+        value.toStr((char*)pair.val, -1, false);
+        _len += (valuenc.length() - pair.val_len);
         _changed = 1;
         return 1;
     }
 
     // установить по индексу
-    bool setN(uint16_t idx, const PairsUtils::AnyValue& value) {
+    bool set(int idx, const sutil::AnyValue& value) {
         if (str) {
-            Pair_t pair = getN(idx);
+            Pair_t pair = get(idx);
             if (pair.val) return set(pair, value);
         }
         return 0;
     }
 
     // добавить новую пару
-    virtual Pair_t add(const PairsUtils::AnyText& key, const PairsUtils::AnyValue& value) {
-        if (!str) return Pair_t();
-        uint16_t nlen = _len + !!_len + key.len + value.len + 3;
+    virtual Pair_t add(sutil::AnyText key, const sutil::AnyValue& value) {
+        if (!str || !key.valid() || !value.valid()) return Pair_t();
+        uint16_t nlen = _len + !!_len + key.length() + value.readLen() + 3;
         if (nlen >= size) return Pair_t();
 
         Pair_t pair;
@@ -113,19 +116,14 @@ class PairsExt {
         if (_len) *(p++) = '\n';  // += \n
         *(p++) = '\"';
         pair.key = p;
-        if (key.pgm) memcpy_P(p, key.str, key.len);
-        else memcpy(p, key.str, key.len);
-        p += key.len;
+        p += key.toStr(p);
         *(p++) = '\"';
         *(p++) = ':';
         pair.val = p;
-        if (value.pgm) memcpy_P(p, value.str, value.len);
-        else memcpy(p, value.str, value.len);
-        p += value.len;
+        p += value.toStr(p);
         *p = '\0';
-
-        pair.key_len = key.len;
-        pair.val_len = value.len;
+        pair.key_len = key.length();
+        pair.val_len = value.readLen();
         _len = nlen;
         _changed = 1;
         _amount++;
@@ -135,18 +133,18 @@ class PairsExt {
     // ======================= GET =======================
 
     // получить по ключу
-    Pair_t get(const PairsUtils::AnyText& key) {
-        if (!str || !_len) return Pair_t();
+    Pair_t get(sutil::AnyText key) {
+        if (!str || !_len || !key.valid()) return Pair_t();
         const char* p = str;
         Pair_t pair;
-        pair.key_len = key.len;
+        pair.key_len = key.length();
 
         while (1) {
             if (p[0] != '\"') return Pair_t();
             pair.key = p + 1;
             p = strchr(p + 1, '\"');
             if (!p) return Pair_t();
-            if (((uint16_t)(p - pair.key) == key.len) && p[1] == ':' && key.cmp(pair.key)) {
+            if (((uint16_t)(p - pair.key) == key.length()) && p[1] == ':' && key.compare(pair.key)) {
                 p++;
                 pair.val = p + 1;
                 while (1) {
@@ -170,11 +168,11 @@ class PairsExt {
     }
 
     // получить по индексу
-    Pair_t getN(uint16_t idx) {
-        if (!str || idx >= _amount) return Pair_t();
+    Pair_t get(int idx) {
+        if (!str || idx >= (int)_amount) return Pair_t();
         const char* p = str + 1;  // skip 1st
         Pair_t pair;
-        uint16_t i = 0;
+        int i = 0;
         while (1) {
             pair.key = p;
             p = strchr(p + 1, '\"');
@@ -201,58 +199,38 @@ class PairsExt {
 
     // ======================== [] ========================
 
-    PairsExt& operator[](uint16_t idx) {
-        _pair = getN(idx);
+    PairsExt& operator[](int idx) {
+        _pair = get(idx);
         return *this;
     }
-    PairsExt& operator[](const PairsUtils::AnyText& key) {
-        _pair = get(key);
-        if (!_pair.key) _pair = add(key, "");
-        return *this;
+    PairsExt& operator[](const char* key) {
+        return _get(key);
+    }
+    PairsExt& operator[](const __FlashStringHelper* key) {
+        return _get(key);
+    }
+    PairsExt& operator[](const String& key) {
+        return _get(key);
+    }
+    PairsExt& operator[](String& key) {
+        return _get(key);
     }
 
-    template <typename T>  // TODO
-    void operator=(T val) {
-        if (_pair.key) set(_pair, PairsUtils::AnyValue(val));
+    void operator=(const sutil::AnyValue& val) {
+        if (_pair.key) set(_pair, val);
         _pair = Pair_t();
-    }
-
-    // ======================== EXPORT ========================
-
-    operator String() {
-        return _pair.toString();
-    }
-
-    // вывести в int
-    int32_t toInt() {
-        return _pair.toInt();
-    }
-
-    // вывести в float
-    float toFloat() {
-        return _pair.toFloat();
-    }
-
-    // вывести в String
-    String toString(bool unescape = true) {
-        return _pair.toString(unescape);
-    }
-
-    // вывести в char массив
-    bool toChar(char* buf, uint16_t len) {
-        return _pair.toChar(buf, len);
     }
 
     // ======================== REMOVE ========================
 
     // удалить по ключу
-    bool remove(const PairsUtils::AnyText& key) {
+    bool remove(sutil::AnyText key) {
         return remove(get(key));
     }
 
     // удалить по индексу
-    bool removeN(uint16_t idx) {
-        return remove(getN(idx));
+    bool remove(int idx) {
+        return remove(get(idx));
     }
 
     // удалить по паре
@@ -280,9 +258,29 @@ class PairsExt {
         return 1;
     }
 
+    // deprecated
+    bool removeN(int idx) {
+        return remove(idx);
+    }
+    Pair_t getN(int idx) {
+        return get(idx);
+    }
+    bool setN(int idx, const sutil::AnyValue& value) {
+        return set(idx, value);
+    }
+
    protected:
     uint16_t _len = 0;
     uint16_t _amount = 0;
     bool _changed = false;
     Pair_t _pair;
+
+   private:
+    PairsExt& _get(sutil::AnyText key) {
+        _pair = get(key);
+        if (!_pair.key) _pair = add(key, "");
+        sutil::AnyText::_str = _pair.val;
+        sutil::AnyText::_len = _pair.val_len;
+        return *this;
+    }
 };

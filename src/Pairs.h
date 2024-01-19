@@ -6,6 +6,8 @@
 
 class Pairs : public PairsExt {
    public:
+    using PairsExt::set;
+
     Pairs(uint16_t size = 0) {
         reserve(size);
     }
@@ -28,14 +30,10 @@ class Pairs : public PairsExt {
 
     // ======================== SET ========================
 
-    bool set(const PairsUtils::AnyText& key, const PairsUtils::AnyValue& value) {
-        return PairsExt::set(key, value);
-    }
-
     // установить по паре
-    bool set(Pair_t pair, const PairsUtils::AnyValue& value) {
-        if (!str || !pair.val) return 0;
-        int16_t dif = value.len - pair.val_len;
+    bool set(Pair_t pair, const sutil::AnyValue& value) {
+        if (!str || !pair.val || !value.valid()) return 0;
+        int16_t dif = value.readLen() - pair.val_len;
         if (dif > 0 && _len + dif >= size) {
             Pair_t pairb = pair;
             char* strb = str;
@@ -47,9 +45,9 @@ class Pairs : public PairsExt {
     }
 
     // добавить новую пару
-    Pair_t add(const PairsUtils::AnyText& key, const PairsUtils::AnyValue& value) {
-        if (!str) return Pair_t();
-        uint16_t nlen = _len + !!_len + key.len + value.len + 3;
+    Pair_t add(sutil::AnyText key, const sutil::AnyValue& value) {
+        if (!str || !key.valid() || !value.valid()) return Pair_t();
+        uint16_t nlen = _len + !!_len + key.length() + value.readLen() + 3;
         if (nlen >= size && !reserve(nlen)) return Pair_t();
         return PairsExt::add(key, value);
     }
