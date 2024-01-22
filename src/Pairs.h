@@ -31,24 +31,24 @@ class Pairs : public PairsExt {
     // ======================== SET ========================
 
     // установить по паре
-    bool set(Pair_t pair, const sutil::AnyValue& value) {
-        if (!str || !pair.val || !value.valid()) return 0;
-        int16_t dif = value.readLen() - pair.val_len;
+    bool set(Pair pair, const sutil::AnyValue& value) {
+        if (!str || !pair._str || !value.valid()) return 0;
+        int16_t dif = value.length() - pair._len;
         if (dif > 0 && _len + dif >= size) {
-            Pair_t pairb = pair;
+            Pair pairb = pair;
             char* strb = str;
             if (!reserve(_len + dif)) return 0;
-            pair.val = str + (pairb.val - strb);
-            pair.key = str + (pairb.key - strb);
+            pair._str = str + (pairb._str - strb);
+            pair.key._str = str + (pairb.key._str - strb);
         }
         return PairsExt::set(pair, value);
     }
 
     // добавить новую пару
-    Pair_t add(sutil::AnyText key, const sutil::AnyValue& value) {
-        if (!str || !key.valid() || !value.valid()) return Pair_t();
-        uint16_t nlen = _len + !!_len + key.length() + value.readLen() + 3;
-        if (nlen >= size && !reserve(nlen)) return Pair_t();
+    Pair add(const sutil::AnyText& key, const sutil::AnyValue& value) {
+        if (!str || !key.valid() || !value.valid()) return Pair();
+        uint16_t nlen = _len + !!_len + key.length() + value.length() + 3;
+        if (nlen >= size && !reserve(nlen)) return Pair();
         return PairsExt::add(key, value);
     }
 
@@ -56,12 +56,12 @@ class Pairs : public PairsExt {
     using PairsExt::setBuffer;
 
     bool _changeBuffer(uint16_t len) {
-        Pair_t pairb = _pair;
+        Pair pairb = _pair;
         char* nstr = (char*)realloc(str, len);
         if (nstr) {
-            if (_pair.key && str != nstr) {
-                _pair.val = nstr + (pairb.val - str);
-                _pair.key = nstr + (pairb.key - str);
+            if (_pair.key._str && str != nstr) {
+                _pair._str = nstr + (pairb._str - str);
+                _pair.key._str = nstr + (pairb.key._str - str);
             }
             str = nstr;
             size = len;

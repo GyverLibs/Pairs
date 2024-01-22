@@ -1,6 +1,7 @@
-#include "Pairs.h"
-#include "PairsExt.h"
-#include "PairsStatic.h"
+#include <Arduino.h>
+#include <Pairs.h>
+#include <PairsExt.h>
+#include <PairsStatic.h>
 
 void setup() {
   Serial.begin(115200);

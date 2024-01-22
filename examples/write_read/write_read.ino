@@ -1,6 +1,7 @@
-#include "Pairs.h"
-#include "PairsExt.h"
-#include "PairsStatic.h"
+#include <Arduino.h>
+#include <Pairs.h>
+#include <PairsExt.h>
+#include <PairsStatic.h>
 
 static const char pstr[] PROGMEM = "progmem text";
 
@@ -8,10 +9,10 @@ void setup() {
     Serial.begin(115200);
     Serial.println();
 
-    char str[200] = {0};
-    PairsExt p(str, 200);
+    // char str[200] = {0};
+    // PairsExt p(str, 200);
 
-    // Pairs p;
+    Pairs p;
     // PairsStatic<200> p;
 
     // создать из любого типа

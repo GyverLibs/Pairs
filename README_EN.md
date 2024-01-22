@@ -110,8 +110,8 @@ VOID Refresh ();// count the length of the line and the number of pairs (after m
 Bool Set (Anytext Key, Anyvalue Value);// install on the key
 Bool setn (Uint16_t IDX, ANYVALUE VALUE); // Install the index
 
-Pair_t get (Anytext Key);// get on the key
-Pair_t getn (uint16_t IDX);// Get the index
+Pair get (Anytext Key);// get on the key
+Pair getn (uint16_t IDX);// Get the index
 
 int32_t toint ();// Bend into int
 Float Tofloat ();// Bring to Float
