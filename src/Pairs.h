@@ -32,7 +32,7 @@ class Pairs : public PairsExt {
 
     // установить по паре
     bool set(Pair pair, const sutil::AnyValue& value) {
-        if (!str || !pair._str || !value.valid()) return 0;
+        if (!str || !pair.valid() || !pair.key.valid() || !value.valid()) return 0;
         int16_t dif = value.length() - pair._len;
         if (dif > 0 && _len + dif >= size) {
             Pair pairb = pair;
@@ -59,7 +59,7 @@ class Pairs : public PairsExt {
         Pair pairb = _pair;
         char* nstr = (char*)realloc(str, len);
         if (nstr) {
-            if (_pair.key._str && str != nstr) {
+            if (_pair.key.valid() && str != nstr) {
                 _pair._str = nstr + (pairb._str - str);
                 _pair.key._str = nstr + (pairb.key._str - str);
             }

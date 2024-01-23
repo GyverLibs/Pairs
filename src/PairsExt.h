@@ -75,20 +75,20 @@ class PairsExt : public sutil::AnyText {
     bool set(const sutil::AnyText& key, const sutil::AnyValue& value) {
         if (!str || !key.valid() || !value.valid()) return 0;
         Pair pair = get(key);
-        if (pair._str) return set(pair, value);
-        else return add(key, value)._str;
+        if (pair.valid()) return set(pair, value);
+        else return add(key, value).valid();
     }
 
     // установить по паре
     virtual bool set(Pair pair, const sutil::AnyValue& value) {
-        if (!str || !pair._str || !value.valid()) return 0;
+        if (!str || !pair.valid() || !pair.key.valid() || !value.valid()) return 0;
 
         int16_t dif = value.length() - pair._len;
         if (dif > 0 && _len + dif >= size) return 0;
 
-        if (value.compare(pair)) return 0;                          // same
-        uint16_t count = str + _len - (pair._str + pair._len) + 1;  // +1 for \0
-        memmove((void*)(pair._str + value.length()), pair._str + pair._len, count);
+        if (value.compare(pair)) return 0;             // same
+        uint16_t count = str + _len - pair.end() + 1;  // +1 for \0
+        memmove((void*)(pair._str + value.length()), pair.end(), count);
         value.toStr((char*)pair._str, -1, false);
         _len += (value.length() - pair._len);
         _changed = 1;
@@ -97,11 +97,9 @@ class PairsExt : public sutil::AnyText {
 
     // установить по индексу
     bool set(int idx, const sutil::AnyValue& value) {
-        if (str) {
-            Pair pair = get(idx);
-            if (pair._str) return set(pair, value);
-        }
-        return 0;
+        if (!str || !value.valid()) return 0;
+        Pair pair = get(idx);
+        return pair.valid() ? set(pair, value) : 0;
     }
 
     // добавить новую пару
@@ -168,7 +166,7 @@ class PairsExt : public sutil::AnyText {
 
     // получить по индексу
     Pair get(int idx) {
-        if (!str || idx >= (int)_amount) return Pair();
+        if (!str || (uint16_t)idx >= _amount) return Pair();
         const char* p = str + 1;  // skip 1st
         Pair pair;
         int i = 0;
@@ -215,8 +213,8 @@ class PairsExt : public sutil::AnyText {
         return _get(key);
     }
 
-    void operator=(const sutil::AnyValue& val) {
-        if (_pair.key._str) set(_pair, val);
+    void operator=(const sutil::AnyValue& value) {
+        if (_pair.key.valid()) set(_pair, value);
         _pair = Pair();
     }
 
@@ -234,10 +232,9 @@ class PairsExt : public sutil::AnyText {
 
     // удалить по паре
     bool remove(Pair pair) {
-        if (!str || !pair._str || !_len) return 0;
+        if (!str || !pair.valid() || !pair.key.valid() || !_len) return 0;
         bool first = (pair.key._str - 1) == str;
-        bool last = *(pair._str + pair._len) == '\0';
-        if (last) {
+        if (!*pair.end()) {
             if (first) {
                 *str = '\0';
                 _len = 0;
@@ -247,7 +244,7 @@ class PairsExt : public sutil::AnyText {
             }
         } else {
             char* end = str + _len;
-            char* src = (char*)pair._str + pair._len + 1;
+            char* src = (char*)pair.end() + 1;
             char* dest = (char*)pair.key._str - 1;
             memmove((void*)dest, src, end - src + 1);
             _len -= (src - dest);
@@ -275,10 +272,12 @@ class PairsExt : public sutil::AnyText {
     Pair _pair;
 
     PairsExt& _get(const sutil::AnyText& key) {
-        _pair = get(key);
-        if (!_pair.key._str) _pair = add(key, "");
-        sutil::AnyText::_str = _pair._str;
-        sutil::AnyText::_len = _pair._len;
+        if (key.valid()) {
+            _pair = get(key);
+            if (!_pair.key.valid()) _pair = add(key, "");
+            sutil::AnyText::_str = _pair._str;
+            sutil::AnyText::_len = _pair._len;
+        }
         return *this;
     }
 };
