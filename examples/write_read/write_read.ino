@@ -20,7 +20,7 @@ void setup() {
     p[F("key1")] = F("F string");
     String s("String");
     p[String("key") + 2] = s;
-    p["key3"] = sutil::AnyText(pstr, true);
+    p["key3"] = sutil::AnyText((const __FlashStringHelper*)pstr);
     p["key4"] = true;
     p["key5"] = 12345;
     p["key6"] = 12345789ull;
