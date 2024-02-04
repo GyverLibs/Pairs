@@ -10,10 +10,17 @@ class PairsExt : public sutil::AnyText {
     PairsExt() {}
     PairsExt(char* str, uint16_t size) : str(str), size(size) {}
 
-    char* str = nullptr;
-    uint16_t size = 0;
-
     // ======================== SYSTEM ========================
+
+    // получить размер буфера
+    uint16_t getSize() {
+        return size;
+    }
+
+    // получить весь пакет как AnyText
+    sutil::AnyText asText() {
+        return sutil::AnyText(str, length());
+    }
 
     // подключить буфер
     void setBuffer(char* str, uint16_t size) {
@@ -166,7 +173,7 @@ class PairsExt : public sutil::AnyText {
 
     // получить по индексу
     Pair get(int idx) {
-        if (!str || (uint16_t)idx >= _amount) return Pair();
+        if (!str || idx < 0 || (uint16_t)idx >= _amount || str[0] != '\"') return Pair();
         const char* p = str + 1;  // skip 1st
         Pair pair;
         int i = 0;
@@ -180,7 +187,7 @@ class PairsExt : public sutil::AnyText {
             pair._str = ++p;
             while (1) {
                 p = strchr(p + 1, '\"');
-                if (p[-1] == '\\') continue;
+                if (p && p[-1] == '\\') continue;
 
                 if (i == idx) {
                     if (!p) pair._len = (str + _len) - pair._str;
@@ -232,7 +239,7 @@ class PairsExt : public sutil::AnyText {
 
     // удалить по паре
     bool remove(Pair pair) {
-        if (!str || !pair.valid() || !pair.key.valid() || !_len) return 0;
+        if (!str || !pair.valid() || !pair.key.valid() || !_len || !_amount) return 0;
         bool first = (pair.key._str - 1) == str;
         if (!*pair.end()) {
             if (first) {
@@ -264,6 +271,10 @@ class PairsExt : public sutil::AnyText {
     bool setN(int idx, const sutil::AnyValue& value) {
         return set(idx, value);
     }
+
+   protected:
+    char* str = nullptr;
+    uint16_t size = 0;
 
    protected:
     uint16_t _len = 0;

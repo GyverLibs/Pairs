@@ -112,11 +112,9 @@ data["key"].toStr(buf);
 PairsExt();
 PairsExt(char* str, uint16_t size);     // подключить внешний буфер размера size
 
-// переменные
-char* str;                              // строка для ручного доступа
-uint16_t size;                          // указанный макс. размер
-
 // методы
+uint16_t getSize();                     // получить размер буфера
+AnyText asText();                       // получить весь пакет как AnyText
 void setBuffer(char* str, uint16_t len);// подключить буфер
 void clear();                           // очистить строку
 bool changed();                         // было изменение данных. Само сбросится в false
