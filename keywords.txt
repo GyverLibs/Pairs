@@ -23,9 +23,9 @@ contains	KEYWORD2
 length	KEYWORD2
 amount	KEYWORD2
 refresh	KEYWORD2
+fromText	KEYWORD2
 remove	KEYWORD2
 getSize	KEYWORD2
-asText	KEYWORD2
 
 setFS	KEYWORD2
 setTimeout	KEYWORD2

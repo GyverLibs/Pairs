@@ -32,9 +32,9 @@ class PairsFile : public Pairs {
         if (_fs->exists(_path)) {
             File file = _fs->open(_path, "r");
             if (!file) return 0;
-            if (!reserve(file.size() + 1 + res)) return 0;
-            file.read((uint8_t*)str, file.size());
-            str[file.size()] = '\0';
+            if (!reserve(file.size() + res)) return 0;
+            file.read((uint8_t*)_str, file.size());
+            ((char*)_str)[file.size()] = '\0';
             refresh();
         } else {
             File file = _fs->open(_path, "w");
@@ -47,7 +47,7 @@ class PairsFile : public Pairs {
     bool update() {
         File file = _fs->open(_path, "w");
         if (!file) return 0;
-        uint16_t len = file.write((uint8_t*)str, length());
+        uint16_t len = file.write((uint8_t*)_str, length());
         return length() == len;
     }
 

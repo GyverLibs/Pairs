@@ -44,7 +44,7 @@ void setup() {
   p.remove("key4");
   p.remove("key6");
 
-  Serial.println(p.str);
+  Serial.println(p);
   Serial.println("DONE");
 
   /*

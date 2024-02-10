@@ -26,7 +26,7 @@ void setup() {
     p["key6"] = 12345789ull;
     p["key7"] = 3.14;
     p["key8"] = sutil::AnyValue(3.141527, 6);
-    Serial.println(p.str);
+    Serial.println(p);
 
     Serial.println("==========");
 
@@ -44,7 +44,7 @@ void setup() {
     Serial.println(ss);
     Serial.println(b);
     Serial.println(i);
-    Serial.println(u64);
+    // Serial.println(u64);
     Serial.println(f);
     Serial.println(d, 6);
 
@@ -58,7 +58,7 @@ void setup() {
     p.removeN(0);  // 4
     p.removeN(0);  // 5
     p.removeN(p.amount() - 1);  // 8
-    Serial.println(p.str);
+    Serial.println(p);
 
     // ожидаемый вывод
     /*

@@ -2,84 +2,93 @@
 #include <Pairs.h>
 #include <PairsStatic.h>
 
-template <typename T>
-void __print(const T& arg) {
-    Serial.print(arg);
-    Serial.print('\t');
-}
-
-template <typename... Args>
-void LOG(const Args&... args) {
-    (__print(args), ...);
-    Serial.println();
-}
-
 static const char pstr[] PROGMEM = "progmem text";
 
-void testPair(PairsExt& p) {
-    LOG("============== START ==============");
+struct Data {
+    int i;
+    float f;
+};
+
+template <typename T>
+void testPair(T& p) {
+    Data data{12345, 3.14};
+
+    Serial.print("\nadd+compare: ");
     p["key0"] = "cstr";
     p[F("key1")] = F("F string");
-    String s("String");
-    p[String("key") + 2] = s;
-    p["key3"] = sutil::AnyText((const __FlashStringHelper*)pstr);
-    p["key4"] = true;
-    p["key5"] = 12345;
-    p["key6"] = 12345789ull;
-    p["key7"] = 3.14;
-    p["key8"] = sutil::AnyValue(3.141527, 6);
+    String key("key2");
+    String val("String");
+    p[key] = val;
+    p[String("key3")] = String("const String&");
+    p["key4"] = sutil::AnyText((const __FlashStringHelper*)pstr);
+    p["key5"] = true;
+    p["key6"] = 12345;
+    p["key7"] = 12345789ull;
+    p["key8"] = 3.14;
+    p["key9"] = sutil::AnyValue(3.141527, 6);
+    p["key10"] = pairs::Value(&data, sizeof(data));
 
-    LOG(p["key0"] == "cstr");
-    LOG(p["key1"] == "F string");
-    LOG(p["key2"] == "String");
-    LOG(p["key3"] == "progmem text");
+    Serial.print(p["key0"] == "cstr");
+    Serial.print(p["key1"] == "F string");
+    Serial.print(p["key2"] == "String");
+    Serial.print(p["key3"] == "const String&");
+    Serial.print(p["key4"] == "progmem text");
+    Serial.print(p["key5"] == true);
+    Serial.print(p["key6"] == 12345);
+    Serial.print(p["key7"] == 12345789ull);
+    Serial.print(p["key8"] == 3.14);
+    Serial.print(p["key9"] == 3.141527);
+    Data data2;
+    p["key10"].decodeB64(&data2, sizeof(data2));
+    Serial.print(data.f == data2.f);
+    Serial.print(data.i == data2.i);
 
-    LOG(p["key4"] == true);
-    LOG(p["key5"] == 12345);
-    LOG(p["key6"] == 12345789ull);
-    LOG(p["key7"] == 3.14);
-    LOG(p["key8"] == 3.141527);
+    Serial.print("\r\nremove: ");
+    p.remove(0);               // 0
+    p.remove(0);               // 1
+    p.remove(7);               // 10
+    p.remove(p.amount() - 1);  // 9
+    p.remove(p.amount() - 1);  // 8
+    p.remove("key2");          // test
+    p.remove("key3");          // test
+    p.remove("key4");          // test
+    p.remove("key5");          // test
+    p.remove("key6");          // test
+    p.remove("key7");          // test
+    Serial.print(p.length() == 0);
 
+    p.fromText(F("\"key0\":v0\n\"key1\":v1\n\"key2\":v2"));
     p.remove(0);
-    p.remove(0);
-    p.remove(6);
-    p.remove(p.amount() - 1);
-    p.remove(p.amount() - 1);
-    p.remove("key0");  // test
-    p.remove("key1");  // test
-    p.remove("key2");  // test
-    p.remove("key3");  // test
-    p.remove("key4");  // test
-    p.remove("key5");  // test
-    p.remove("key6");  // test
-    p.remove("key7");  // test
-    p.remove("key8");  // test
-    LOG(p.length() == 0);
+    Serial.print(p == F("\"key1\":v1\n\"key2\":v2"));
+
+    p.fromText(F("\"key0\":v0\n\"key1\":v1\n\"key2\":v2"));
+    p.remove(1);
+    Serial.print(p == F("\"key0\":v0\n\"key2\":v2"));
+
+    p.fromText(F("\"key0\":v0\n\"key1\":v1\n\"key2\":v2"));
+    p.remove(2);
+    Serial.print(p == F("\"key0\":v0\n\"key1\":v1"));
+
+    p.clear();
+
+    Serial.print("\r\nchange: ");
 
     // set
     p["key0"] = "val0";
     p["key1"] = "val1";
     p["key2"] = "val2";
-    Serial.println(p.asText());
 
     // change long
     p["key0"] = "val000";
     p["key1"] = "val111";
     p["key2"] = "val222";
-    Serial.println(p.asText());
+    Serial.print(p == F("\"key0\":val000\n\"key1\":val111\n\"key2\":val222"));
 
     // change short
     p["key0"] = "v0";
     p["key1"] = "v1";
     p["key2"] = "v2";
-    Serial.println(p.asText());
-
-    p.remove("key0");
-    p.remove("key1");
-    p.remove("key2");
-    p.remove(0);               // test
-    p.remove(p.amount() - 1);  // test
-    LOG(p.length() == 0);
+    Serial.print(p == F("\"key0\":v0\n\"key1\":v1\n\"key2\":v2"));
 }
 
 void setup() {
@@ -87,12 +96,14 @@ void setup() {
 
     char str[200] = {0};
     PairsExt p1(str, 200);
-    Pairs p2;
-    PairsStatic<200> p3;
+    PairsStatic<200> p2;
+    Pairs p3;
     testPair(p1);
     testPair(p2);
     testPair(p3);
-    LOG("============== DONE ==============");
+
+    Serial.println();
+    Serial.println("DONE");
 }
 void loop() {
 }
