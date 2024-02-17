@@ -281,6 +281,12 @@ class PairsExt : public sutil::AnyText {
         return 1;
     }
 
+    // совместимость
+    bool tick() { return 0; }
+    bool update() { return 1; }
+    bool begin(uint16_t res = 0) { return 1; }
+    void setTimeout(uint32_t tout = 10000) {}
+
     // deprecated
     bool removeN(int idx) {
         return remove(idx);

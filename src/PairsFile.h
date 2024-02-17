@@ -43,7 +43,7 @@ class PairsFile : public Pairs {
         return 1;
     }
 
-    // обновить данные в файле
+    // обновить данные в файле сейчас
     bool update() {
         File file = _fs->open(_path, "w");
         if (!file) return 0;
