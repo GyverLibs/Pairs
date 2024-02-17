@@ -224,13 +224,14 @@ struct S {
 S s{3.14, 1234};
 int arr[] = {1, 2, 3, 4, 5};
 
-data["key1"] = pairs::Value(&s, sizeof(s));
-data.set("key2", &arr, sizeof(arr));
+data["key1"] = pairs::Value(&s, sizeof(s));  // запаковать, способ 1
+data.set("key2", &arr, sizeof(arr));         // запаковать, способ 2
 
 // чтение
 S s1;
 int arr1[5];
 
+// распаковать в указанную переменную
 data["key1"].decodeB64(&s1, sizeof(s1));
 data.get("key2").decodeB64(&arr1, sizeof(arr1));
 ```
