@@ -2,22 +2,11 @@
 #include <Pairs.h>
 #include <PairsStatic.h>
 
-template <typename T>
-void __print(const T& arg) {
-    Serial.print(arg);
-    Serial.print('\t');
-}
-
-template <typename... Args>
-void LOG(const Args&... args) {
-    (__print(args), ...);
-    Serial.println();
-}
 
 static const char pstr[] PROGMEM = "progmem text";
 
 void testPair(PairsExt& p) {
-    LOG("============== START ==============");
+    Serial.println("============== START ==============");
     p["key0"] = "cstr";
     p[F("key1")] = F("F string");
     String s("String");
@@ -29,16 +18,16 @@ void testPair(PairsExt& p) {
     p["key7"] = 3.14;
     p["key8"] = sutil::AnyValue(3.141527, 6);
 
-    LOG(p["key0"] == "cstr");
-    LOG(p["key1"] == "F string");
-    LOG(p["key2"] == "String");
-    LOG(p["key3"] == "progmem text");
+    Serial.println(p["key0"] == "cstr");
+    Serial.println(p["key1"] == "F string");
+    Serial.println(p["key2"] == "String");
+    Serial.println(p["key3"] == "progmem text");
 
-    LOG(p["key4"] == true);
-    LOG(p["key5"] == 12345);
-    LOG(p["key6"] == 12345789ull);
-    LOG(p["key7"] == 3.14);
-    LOG(p["key8"] == 3.141527);
+    Serial.println(p["key4"] == true);
+    Serial.println(p["key5"] == 12345);
+    Serial.println(p["key6"] == 12345789ull);
+    Serial.println(p["key7"] == 3.14);
+    Serial.println(p["key8"] == 3.141527);
 
     p.remove(0);
     p.remove(0);
@@ -54,7 +43,7 @@ void testPair(PairsExt& p) {
     p.remove("key6");  // test
     p.remove("key7");  // test
     p.remove("key8");  // test
-    LOG(p.length() == 0);
+    Serial.println(p.length() == 0);
 
     // set
     p["key0"] = "val0";
@@ -79,7 +68,7 @@ void testPair(PairsExt& p) {
     p.remove("key2");
     p.remove(0);               // test
     p.remove(p.amount() - 1);  // test
-    LOG(p.length() == 0);
+    Serial.println(p.length() == 0);
 }
 
 void setup() {
@@ -92,7 +81,7 @@ void setup() {
     testPair(p1);
     testPair(p2);
     testPair(p3);
-    LOG("============== DONE ==============");
+    Serial.println("============== DONE ==============");
 }
 void loop() {
 }
