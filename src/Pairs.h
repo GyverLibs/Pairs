@@ -34,12 +34,12 @@ class Pairs : public PairsExt {
     }
 
     // создать из текста
-    bool fromText(const sutil::AnyText& text) {
+    bool fromText(const su::Text& text) {
         if (!reserve(text.length())) return 0;
         return PairsExt::fromText(text);
     }
 
-    void operator=(const sutil::AnyText& text) {
+    void operator=(const su::Text& text) {
         fromText(text);
     }
 
@@ -63,7 +63,7 @@ class Pairs : public PairsExt {
     }
 
     // добавить новую пару
-    Pair add(const sutil::AnyText& key, const pairs::Value& value) {
+    Pair add(const su::Text& key, const pairs::Value& value) {
         if (!_str || !key.valid() || !value.valid()) return Pair();
 
         uint16_t nlen = (length() ? (length() + 1) : 0) + key.length() + value.length() + 3;
