@@ -75,6 +75,16 @@ Pairs(uint16_t size);           // с указанием резерва стро
 
 // методы
 bool reserve(uint16_t len);     // зарезервировать строку
+
+// копировать из другого экземпляра
+bool copy(const Pairs& val);
+
+// переместить из другого экземпляра
+void move(Pairs& rval);
+
+// освободить память
+void reset();
+
 // + наследует всё из PairsExt
 ```
 </details>
