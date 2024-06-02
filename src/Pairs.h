@@ -13,21 +13,21 @@ class Pairs : public PairsExt {
     }
 
     ~Pairs() {
-        if (_str) free((void*)_str);
+        reset();
     }
 
     // ====================== SYSTEM  ======================
 
     // зарезервировать строку на количество символов
-    bool reserve(uint16_t len) {
-        len++;  // +/0
-        if (_str && _size >= len) return 1;
+    bool reserve(uint16_t size) {
+        size++;  // +/0
+        if (_str && _size >= size) return 1;
 
-        char* nstr = (char*)realloc((void*)_str, len);
+        char* nstr = (char*)realloc((void*)_str, size);
         if (nstr) {
             _str = nstr;
-            _size = len;
-            if (!_len) *((char*)_str) = '\0';
+            _size = size;
+            if (!_len) *((char*)_str) = '\0';  // 1st
             return 1;
         }
         return 0;
@@ -71,16 +71,81 @@ class Pairs : public PairsExt {
         return PairsExt::add(key, value);
     }
 
-   private:
-    using PairsExt::setBuffer;
-
-    bool _changeBuffer(uint16_t len) {
-        char* nstr = (char*)realloc((void*)_str, len);
-        if (nstr) {
-            _str = nstr;
-            _size = len;
-            return 1;
-        }
-        return 0;
+    Pairs(const Pairs& val) {
+        copy(val);
     }
+    Pairs& operator=(const Pairs& val) {
+        copy(val);
+        return *this;
+    }
+
+#if __cplusplus >= 201103L
+    Pairs(PairsExt&&) = delete;
+    Pairs& operator=(PairsExt&&) = delete;
+
+    Pairs(Pairs&& rval) noexcept {
+        move(rval);
+    }
+    Pairs& operator=(Pairs&& rval) noexcept {
+        move(rval);
+        return *this;
+    }
+#endif
+
+    // копировать из другого экземпляра
+    bool copy(const Pairs& val) {
+        if (this == &val) return 1;
+        if (!val._str || !val._len || !reserve(val._len)) {
+            reset();
+            reserve(0);  // init
+            return 0;
+        }
+        memcpy((void*)_str, (void*)val._str, val._len + 1);
+        // left: _str, _size
+        _len = val._len;
+        _amount = val._amount;
+        _changed = val._changed;
+        return 1;
+    }
+
+    // переместить из другого экземпляра
+    void move(Pairs& rval) noexcept {
+        if (this == &rval) return;
+        if (_str) {
+            if (rval._str && _size >= rval._len + 1) {
+                memcpy((void*)_str, (void*)rval._str, rval._len + 1);
+                // left: _str, _size
+                _len = rval._len;
+                _amount = rval._amount;
+                _changed = rval._changed;
+                return;
+            } else {
+                free((void*)_str);
+            }
+        }
+        _str = rval._str;
+        rval._str = nullptr;
+        _size = rval._size;
+        _len = rval._len;
+        _amount = rval._amount;
+        _changed = rval._changed;
+    }
+
+    // освободить память
+    void reset() {
+        free((void*)_str);
+        _str = nullptr;
+        _size = 0;
+        _len = 0;
+        _amount = 0;
+        _changed = false;
+    }
+
+   private:
+    using PairsExt::_amount;
+    using PairsExt::_changed;
+    using PairsExt::_len;
+    using PairsExt::_size;
+    using PairsExt::_str;
+    using PairsExt::setBuffer;
 };
