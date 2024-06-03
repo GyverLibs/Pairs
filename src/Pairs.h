@@ -141,11 +141,13 @@ class Pairs : public PairsExt {
         _changed = false;
     }
 
-   private:
+   protected:
     using PairsExt::_amount;
     using PairsExt::_changed;
     using PairsExt::_len;
     using PairsExt::_size;
     using PairsExt::_str;
+
+   private:
     using PairsExt::setBuffer;
 };
