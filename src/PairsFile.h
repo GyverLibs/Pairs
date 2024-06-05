@@ -45,9 +45,10 @@ class PairsFile : public Pairs {
 
     // обновить данные в файле сейчас
     bool update() {
+        if (!_str) return 0;
         File file = _fs->open(_path, "w");
         if (!file) return 0;
-        uint16_t len = file.write((uint8_t*)_str, length());
+        size_t len = file.write((uint8_t*)_str, length());
         return length() == len;
     }
 
