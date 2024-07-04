@@ -48,9 +48,9 @@ class Value : public su::Value {
 
 typedef void (*SetHook)(void* pairs, const Pair& pair, const pairs::Value& value);
 
-class PairAccess : public su::Text {
+class PairAccess : public Text {
    public:
-    PairAccess(void* pairs, SetHook hook, const Pair& pair) : su::Text(pair._str, pair._len), pairs(pairs), hook(hook), pair(pair) {}
+    PairAccess(void* pairs, SetHook hook, const Pair& pair) : Text(pair._str, pair._len), pairs(pairs), hook(hook), pair(pair) {}
 
     void operator=(const pairs::Value& value) {
         if (pair.key.valid() && value.valid()) hook(pairs, pair, value);

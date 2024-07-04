@@ -6,7 +6,7 @@
 #include "Pair.h"
 #include "PairUtils.h"
 
-class PairsExt : public su::Text {
+class PairsExt : public Text {
     friend class pairs::PairAccess;
 
    public:
@@ -40,7 +40,7 @@ class PairsExt : public su::Text {
     }
 
     // проверка на существование пары
-    bool contains(const su::Text& key) {
+    bool has(const Text& key) {
         if (!length() || !key.length()) return 0;
         char buf[key.length() + 3 + 1];  // "": == 3
         char* p = buf;
@@ -72,7 +72,7 @@ class PairsExt : public su::Text {
     }
 
     // создать из текста
-    bool fromText(const su::Text& text) {
+    bool fromText(const Text& text) {
         if (text.toStr((char*)_str, _size)) {
             refresh();
             _len = text.length();
@@ -81,18 +81,18 @@ class PairsExt : public su::Text {
         return 0;
     }
 
-    void operator=(const su::Text& text) {
+    void operator=(const Text& text) {
         fromText(text);
     }
 
     // ======================== SET ========================
 
     // установить по ключу
-    bool set(const su::Text& key, void* var, size_t size) {
+    bool set(const Text& key, void* var, size_t size) {
         return set(key, pairs::Value(var, size));
     }
     // установить по ключу
-    bool set(const su::Text& key, const pairs::Value& value) {
+    bool set(const Text& key, const pairs::Value& value) {
         if (!_str || !key.valid() || !value.valid()) return 0;
 
         Pair pair = get(key);
@@ -131,11 +131,11 @@ class PairsExt : public su::Text {
     }
 
     // добавить новую пару
-    Pair add(const su::Text& key, void* var, size_t size) {
+    Pair add(const Text& key, void* var, size_t size) {
         return add(key, pairs::Value(var, size));
     }
     // добавить новую пару
-    virtual Pair add(const su::Text& key, const pairs::Value& value) {
+    virtual Pair add(const Text& key, const pairs::Value& value) {
         if (!_str || !key.valid() || !value.valid()) return Pair();
 
         uint16_t nlen = (length() ? (length() + 1) : 0) + key.length() + value.length() + 3;
@@ -163,7 +163,7 @@ class PairsExt : public su::Text {
     // ======================= GET =======================
 
     // получить по ключу
-    Pair get(const su::Text& key) {
+    Pair get(const Text& key) {
         if (!length() || !key.valid()) return Pair();
 
         const char* p = _str;
@@ -249,7 +249,7 @@ class PairsExt : public su::Text {
     // ======================== REMOVE ========================
 
     // удалить по ключу
-    bool remove(const su::Text& key) {
+    bool remove(const Text& key) {
         return remove(get(key));
     }
 
@@ -288,14 +288,17 @@ class PairsExt : public su::Text {
     void setTimeout(uint32_t tout = 10000) {}
 
     // deprecated
-    bool removeN(int idx) {
+    bool removeN(int idx) __attribute__((deprecated)) {
         return remove(idx);
     }
-    Pair getN(int idx) {
+    Pair getN(int idx) __attribute__((deprecated)) {
         return get(idx);
     }
-    bool setN(int idx, const pairs::Value& value) {
+    bool setN(int idx, const pairs::Value& value) __attribute__((deprecated)) {
         return set(idx, value);
+    }
+    bool contains(const Text& key) __attribute__((deprecated)) {
+        return has(key);
     }
 
    protected:
@@ -307,7 +310,7 @@ class PairsExt : public su::Text {
     static void _set(void* pairs, const Pair& pair, const pairs::Value& value) {
         ((PairsExt*)pairs)->set(pair, value);
     }
-    Pair _get_add(const su::Text& key) {
+    Pair _get_add(const Text& key) {
         Pair pair = get(key);
         return pair.valid() ? pair : add(key, "");
     }

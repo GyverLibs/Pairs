@@ -2,7 +2,7 @@
 #include <Arduino.h>
 #include <StringUtils.h>
 
-class Pair : public su::Text {
+class Pair : public Text {
    public:
-    su::Text key;
+    Text key;
 };

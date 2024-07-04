@@ -20,12 +20,12 @@ void testPair(T& p) {
     String val("String");
     p[key] = val;
     p[String("key3")] = String("const String&");
-    p["key4"] = su::Text((const __FlashStringHelper*)pstr);
+    p["key4"] = Text((const __FlashStringHelper*)pstr);
     p["key5"] = true;
     p["key6"] = 12345;
     p["key7"] = 12345789ull;
     p["key8"] = 3.14;
-    p["key9"] = su::Value(3.141527, 6);
+    p["key9"] = Value(3.141527, 6);
     p["key10"] = pairs::Value(&data, sizeof(data));
 
     Serial.print(p["key0"] == "cstr");

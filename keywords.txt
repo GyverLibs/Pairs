@@ -19,7 +19,7 @@ clear	KEYWORD2
 changed	KEYWORD2
 set	KEYWORD2
 get	KEYWORD2
-contains	KEYWORD2
+has	KEYWORD2
 length	KEYWORD2
 amount	KEYWORD2
 refresh	KEYWORD2
