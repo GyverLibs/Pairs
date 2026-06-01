@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Arduino.h>
-#include <StringUtils.h>
+#include <StringUtilsGyver.h>
 
 #include "Pair.h"
 #include "PairUtils.h"
